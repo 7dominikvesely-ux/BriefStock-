@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BriefStock CZ – Investice jednoduše</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--accent:#c8a84b;--accent2:#e8c96b;--text:#e8e8f0;--muted:#8888a0;--green:#3ddc84;--red:#ff5252}
+  *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+  .logo{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;text-decoration:none;color:var(--text);cursor:pointer}
+  .logo span{color:var(--accent)}
+  .nav-right{display:flex;align-items:center;gap:1rem}
+  .nav-back{color:var(--muted);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;cursor:pointer;transition:color .2s;display:none}
+  .nav-back:hover{color:var(--accent)}
+  .nav-btn{background:var(--accent);color:#0a0a0f;border:none;padding:0.5rem 1.2rem;font-family:'DM Sans',sans-serif;font-weight:500;font-size:0.85rem;cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;transition:background .2s;text-decoration:none}
+  .nav-btn:hover{background:var(--accent2)}
+
+  /* PAGES */
+  .page{display:none;animation:fadeUp 0.5s ease both}
+  .page.active{display:block}
+
+  /* HOME */
+  .hero{min-height:100vh;display:flex;align-items:center;padding:7rem 2rem 3rem;position:relative;overflow:hidden}
+  .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 60% 40%,rgba(200,168,75,0.07) 0%,transparent 70%)}
+  .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(200,168,75,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(200,168,75,0.04) 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(ellipse at center,black 20%,transparent 70%)}
+  .hero-content{position:relative;max-width:680px}
+  .hero-badge{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(200,168,75,0.1);border:1px solid rgba(200,168,75,0.3);color:var(--accent);padding:0.35rem 0.9rem;font-size:0.75rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1.5rem}
+  .hero-badge::before{content:'';width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,8vw,5rem);font-weight:900;line-height:1.05;letter-spacing:-0.03em;margin-bottom:1.2rem}
+  .hero h1 em{font-style:normal;color:var(--accent)}
+  .hero p{font-size:clamp(0.95rem,2.5vw,1.1rem);color:var(--muted);line-height:1.7;max-width:500px;margin-bottom:2rem;font-weight:300}
+  .hero-actions{display:flex;gap:0.75rem;flex-wrap:wrap}
+  .btn-primary{background:var(--accent);color:#0a0a0f;padding:0.8rem 1.8rem;font-family:'DM Sans',sans-serif;font-weight:500;font-size:0.9rem;border:none;cursor:pointer;letter-spacing:0.05em;text-transform:uppercase;transition:all .2s;display:inline-block}
+  .btn-primary:hover{background:var(--accent2)}
+  .btn-secondary{background:transparent;color:var(--text);padding:0.8rem 1.8rem;font-family:'DM Sans',sans-serif;font-weight:500;font-size:0.9rem;border:1px solid var(--border);cursor:pointer;letter-spacing:0.05em;text-transform:uppercase;transition:all .2s;display:inline-block}
+  .btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+
+  .ticker{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0.7rem 0;overflow:hidden;white-space:nowrap}
+  .ticker-inner{display:inline-flex;gap:2.5rem;animation:ticker 25s linear infinite}
+  .ti{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.8rem;font-weight:500}
+  .tn{color:var(--muted)}.up{color:var(--green)}.down{color:var(--red)}
+
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);border-bottom:1px solid var(--border)}
+  @media(min-width:640px){.stats{grid-template-columns:repeat(4,1fr)}}
+  .stat{padding:2rem;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .stat:nth-child(2n){border-right:none}
+  @media(min-width:640px){.stat:nth-child(2n){border-right:1px solid var(--border)}.stat:last-child{border-right:none}.stat{border-bottom:none}}
+  .stat-num{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:var(--accent);line-height:1;margin-bottom:0.4rem}
+  .stat-lbl{font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em}
+
+  .articles-section{padding:3rem 2rem}
+  .sec-label{font-size:0.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:0.75rem;font-weight:500}
+  .sec-title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,5vw,2.5rem);font-weight:700;line-height:1.1;letter-spacing:-0.02em;margin-bottom:2rem}
+  .articles-grid{display:grid;grid-template-columns:1fr;gap:1.5px;background:var(--border)}
+  @media(min-width:640px){.articles-grid{grid-template-columns:1fr 1fr}}
+  @media(min-width:900px){.articles-grid{grid-template-columns:2fr 1fr 1fr}.ac-featured{grid-row:span 2}}
+  .ac{background:var(--surface);padding:1.5rem;cursor:pointer;position:relative;overflow:hidden;transition:background .2s}
+  .ac::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--accent);transition:width .3s}
+  .ac:hover{background:var(--surface2)}.ac:hover::after{width:100%}
+  .ac-featured{padding:2rem}
+  .ac-featured .ac-title{font-size:clamp(1.1rem,3vw,1.6rem)}
+  .ac-tag{display:inline-block;background:rgba(200,168,75,0.1);color:var(--accent);font-size:0.68rem;font-weight:500;padding:0.2rem 0.55rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem}
+  .ac-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;line-height:1.3;margin-bottom:0.6rem}
+  .ac-exc{font-size:0.85rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem;font-weight:300}
+  .ac-meta{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);border-top:1px solid var(--border);padding-top:0.75rem}
+  .divider{width:32px;height:2px;background:var(--accent);margin:1rem 0}
+
+  .ad{background:var(--surface2);border:1px solid var(--border);padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin:2rem 0;flex-wrap:wrap}
+  .al{font-size:0.62rem;color:var(--muted);text-transform:uppercase;margin-bottom:0.2rem}
+  .at{font-size:0.92rem;font-weight:500}
+  .ac-btn{border:1px solid var(--accent);color:var(--accent);padding:0.4rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;transition:all .2s;background:transparent}
+  .ac-btn:hover{background:var(--accent);color:#0a0a0f}
+
+  .newsletter-sec{background:var(--surface2);border-top:1px solid var(--border);padding:3rem 2rem;text-align:center}
+  .newsletter-inner{max-width:500px;margin:0 auto}
+  .nl-form{display:flex;margin-top:2rem}
+  .nl-form input{flex:1;background:var(--bg);border:1px solid var(--border);border-right:none;color:var(--text);padding:0.8rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;min-width:0}
+  .nl-form input:focus{border-color:var(--accent)}
+  .nl-form input::placeholder{color:var(--muted)}
+  .nl-form button{background:var(--accent);color:#0a0a0f;border:none;padding:0.8rem 1.2rem;font-family:'DM Sans',sans-serif;font-weight:500;font-size:0.85rem;cursor:pointer;text-transform:uppercase;white-space:nowrap}
+
+  /* ARTICLE PAGE */
+  .art-hero{padding:7rem 2rem 2rem;max-width:820px;margin:0 auto}
+  .art-tags{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.2rem}
+  .art-tag{background:rgba(200,168,75,0.1);color:var(--accent);font-size:0.68rem;font-weight:500;padding:0.2rem 0.6rem;text-transform:uppercase;letter-spacing:0.1em}
+  .art-tag.green{background:rgba(61,220,132,0.1);color:var(--green)}
+  .art-h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,6vw,3rem);font-weight:900;line-height:1.1;letter-spacing:-0.03em;margin-bottom:1rem}
+  .art-sub{font-size:clamp(0.9rem,2.5vw,1.05rem);color:var(--muted);line-height:1.7;font-weight:300;margin-bottom:1.5rem}
+  .art-meta{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;padding:1rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);font-size:0.8rem;color:var(--muted)}
+  .art-meta strong{color:var(--text)}
+  .stock-box{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:1.5rem;margin:2rem 0;display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+  @media(min-width:480px){.stock-box{grid-template-columns:repeat(4,1fr)}}
+  .sl{font-size:0.68rem;color:var(--muted);text-transform:uppercase;margin-bottom:0.3rem}
+  .sv{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700}.sv.up{color:var(--green)}.sv.g{color:var(--accent)}
+  .art-body{max-width:820px;margin:0 auto;padding:0 2rem 5rem}
+  .art-body h2{font-family:'Playfair Display',serif;font-size:clamp(1.3rem,4vw,1.7rem);font-weight:700;margin:2.5rem 0 0.8rem}
+  .art-body h3{font-size:0.9rem;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin:1.8rem 0 0.6rem}
+  .art-body p{font-size:0.97rem;line-height:1.85;color:#c8c8d8;font-weight:300;margin-bottom:1rem}
+  .art-body strong{color:var(--text);font-weight:500}
+  .hl{background:var(--surface2);border-left:3px solid var(--accent);padding:1.2rem 1.5rem;margin:1.8rem 0;font-size:1rem;line-height:1.7;color:var(--text);font-style:italic;font-family:'Playfair Display',serif}
+  .procon{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin:1.8rem 0}
+  .pro,.con{background:var(--surface);padding:1.2rem}
+  .pro-t{font-size:0.72rem;text-transform:uppercase;color:var(--green);margin-bottom:0.8rem}
+  .con-t{font-size:0.72rem;text-transform:uppercase;color:var(--red);margin-bottom:0.8rem}
+  .procon ul{list-style:none;display:flex;flex-direction:column;gap:0.5rem}
+  .pro ul li::before{content:'↑ ';color:var(--green)}.con ul li::before{content:'↓ ';color:var(--red)}
+  .procon li{font-size:0.85rem;line-height:1.5;color:#c8c8d8}
+  .verdict{background:linear-gradient(135deg,rgba(200,168,75,0.08),rgba(200,168,75,0.03));border:1px solid rgba(200,168,75,0.3);padding:1.8rem;margin:2rem 0}
+  .vl{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--accent);margin-bottom:0.6rem}
+  .vt{font-family:'Playfair Display',serif;font-size:1.1rem;line-height:1.5;color:var(--text)}
+  .vr{margin-top:0.8rem;font-size:0.82rem;color:var(--muted)}.stars{color:var(--accent)}
+  .disc{font-size:0.75rem;color:var(--muted);border-top:1px solid var(--border);padding-top:1.2rem;margin-top:2.5rem;line-height:1.7}
+  .more-articles{background:var(--surface);border-top:1px solid var(--border);padding:2.5rem 2rem}
+  .more-t{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:1.3rem}
+  .more-grid{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border)}
+  @media(min-width:560px){.more-grid{grid-template-columns:repeat(3,1fr)}}
+  .mc{background:var(--surface);padding:1.1rem;cursor:pointer;transition:background .2s}
+  .mc:hover{background:var(--surface2)}
+  .mc-tag{font-size:0.66rem;color:var(--accent);text-transform:uppercase;margin-bottom:0.35rem}
+  .mc-title{font-family:'Playfair Display',serif;font-size:0.92rem;font-weight:700;line-height:1.3;margin-bottom:0.35rem}
+  .mc-meta{font-size:0.7rem;color:var(--muted)}
+
+  footer{background:var(--surface);border-top:1px solid var(--border);padding:1.8rem 2rem;display:flex;flex-direction:column;gap:0.7rem;align-items:center;text-align:center}
+  @media(min-width:560px){footer{flex-direction:row;justify-content:space-between}}
+  .fl{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;cursor:pointer;color:var(--text)}.fl span{color:var(--accent)}
+  .fc{font-size:0.73rem;color:var(--muted)}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+  @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo" onclick="showHome()">Brief<span>Stock</span> CZ</div>
+  <div class="nav-right">
+    <div class="nav-back" id="nav-back" onclick="showHome()">← Zpět</div>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <h1>Investuj chytře.<br><em>Rozhoduj se</em> s daty.</h1>
+      <p>BriefStock CZ přináší přehled akcií a trhů pro česky mluvící investory. Stručně, přehledně, zdarma.</p>
+
+    </div>
+  </section>
+
+  <!-- TradingView Ticker Widget -->
+  <div id="ticker" style="border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+      {
+        "symbols": [
+          {"proName":"NASDAQ:NVDA","title":"NVIDIA"},
+          {"proName":"NASDAQ:AAPL","title":"Apple"},
+          {"proName":"NASDAQ:GOOGL","title":"Alphabet"},
+          {"proName":"NASDAQ:MSFT","title":"Microsoft"},
+          {"proName":"NASDAQ:AMZN","title":"Amazon"},
+          {"proName":"NASDAQ:META","title":"Meta"},
+          {"proName":"NASDAQ:AVGO","title":"Broadcom"},
+          {"proName":"NYSE:TSLA","title":"Tesla"},
+          {"proName":"NYSE:BRK.B","title":"Berkshire"},
+          {"proName":"NYSE:WMT","title":"Walmart"}
+        ],
+        "showSymbolLogo": false,
+        "isTransparent": true,
+        "displayMode": "compact",
+        "colorTheme": "dark",
+        "locale": "en"
+      }
+      </script>
+    </div>
+  </div>
+
+
+
+  <section class="articles-section" id="clanky">
+    <div class="sec-label">Nejnovější</div>
+    <h2 class="sec-title">Analýzy & Zpravodajství</h2>
+    <div class="articles-grid">
+      <div class="ac ac-featured" onclick="showArticle('nvidia')" data-id="nvidia">
+        <div class="ac-tag">Hlavní analýza</div>
+        <h3 class="ac-title">NVIDIA 2026: Je AI boom skutečný, nebo přehřátý?</h3>
+        <div class="divider"></div>
+        <p class="ac-exc">Akcie NVDA vzrostly za dva roky o stovky procent. Podíváme se na čísla bez emocí.</p>
+        <div class="ac-meta"><span>21. 2. 2026</span><span>8 min →</span></div>
+      </div>
+      <div class="ac" onclick="showArticle('microsoft')" data-id="microsoft">
+        <div class="ac-tag">Akcie</div>
+        <h3 class="ac-title">Microsoft: Azure a AI jako motor růstu</h3>
+        <p class="ac-exc">Cloud a umělá inteligence mění Microsoft. Stojí za to koupit akcie dnes?</p>
+        <div class="ac-meta"><span>20. 2. 2026</span><span>6 min →</span></div>
+      </div>
+      <div class="ac" onclick="showArticle('broadcom')" data-id="broadcom">
+        <div class="ac-tag">Technologie</div>
+        <h3 class="ac-title">Broadcom: Tichý gigant AI čipů</h3>
+        <p class="ac-exc">Broadcom není tak slavný jako NVIDIA, ale jeho role v AI je klíčová.</p>
+        <div class="ac-meta"><span>19. 2. 2026</span><span>5 min →</span></div>
+      </div>
+      <div class="ac" onclick="showArticle('netflix')" data-id="netflix">
+        <div class="ac-tag">Média</div>
+        <h3 class="ac-title">Netflix: Od DVD půjčovny k reklamnímu gigantu</h3>
+        <p class="ac-exc">Netflix přidal reklamy a živé sporty. Je to správný směr pro investory?</p>
+        <div class="ac-meta"><span>18. 2. 2026</span><span>6 min →</span></div>
+      </div>
+      <div class="ac" onclick="showArticle('amd')" data-id="amd">
+        <div class="ac-tag">Technologie</div>
+        <h3 class="ac-title">AMD: Může porazit NVIDIA v AI závodě?</h3>
+        <p class="ac-exc">AMD agresivně útočí na trh AI čipů. Má šanci na výrazný podíl?</p>
+        <div class="ac-meta"><span>17. 2. 2026</span><span>7 min →</span></div>
+      </div>
+      <div class="ac" onclick="showArticle('palantir')" data-id="palantir">
+        <div class="ac-tag">AI & Data</div>
+        <h3 class="ac-title">Palantir: Kontroverzní AI firma s vládními kontrakty</h3>
+        <p class="ac-exc">Palantir milují jedni a nenávidí druzí. Co říkají čísla?</p>
+        <div class="ac-meta"><span>16. 2. 2026</span><span>7 min →</span></div>
+      </div>
+    </div>
+    <div class="ad"><div><div class="al">Reklama</div><div class="at">Otevřete si investiční účet – bez poplatků za obchod</div></div><button class="ac-btn">Zjistit více →</button></div>
+  </section>
+
+  <footer>
+    <div class="fl" onclick="showHome()">Brief<span>Stock</span> CZ</div>
+    <div class="fc">© 2026 BriefStock CZ · Informace nejsou investičním poradenstvím.</div>
+  </footer>
+</div>
+
+<!-- ARTICLE PAGES -->
+<div class="page" id="page-article">
+  <div id="article-content"></div>
+  <footer>
+    <div class="fl" onclick="showHome()">Brief<span>Stock</span> CZ</div>
+    <div class="fc">© 2026 BriefStock CZ · Informace nejsou investičním poradenstvím.</div>
+  </footer>
+</div>
+
+<script>
+const articles = {
+  nvidia: {
+    tags: ['Analýza','Akcie','Technologie'],
+    title: 'NVIDIA 2025: Je AI boom skutečný, nebo přehřátý?',
+    subtitle: 'Akcie NVDA vzrostly za dva roky o stovky procent. Analytici se rozcházejí. Podíváme se na čísla bez emocí.',
+    date: '21. února 2026', time: '8 min čtení', ticker: 'NVDA',
+    price: '$190.00', change: '+3.14%', pe: '35.2×', cap: '$2.16T',
+    highlight: '„NVIDIA se stala jednou z nejhodnotnějších společností světa. Ale co to znamená pro investory, kteří uvažují o vstupu dnes?"',
+    body: `
+      <h2>Proč se o NVIDIA tolik mluví</h2><div class="divider"></div>
+      <p>Pokud jste v posledních dvou letech sledovali finanční zprávy, jméno NVIDIA vám určitě neuteklo. Společnost, která začínala jako výrobce grafických karet pro hráče, se proměnila v absolutní páteř globálního boomu umělé inteligence. Jejich čipy <strong>GPU H100 a A100</strong> pohánějí drtivou většinu moderních AI modelů – od ChatGPT po interní systémy největších technologických gigantů.</p>
+      <p>Výsledek? Akcie vzrostly z přibližně <strong>$150 na více než $875</strong> za méně než dva roky – nárůst přes 480 %. Pro srovnání S&P 500 za stejnou dobu vzrostl o přibližně 45 %.</p>
+      <h2>Finanční výsledky</h2><div class="divider"></div>
+      <h3>Příjmy a ziskovost</h3>
+      <p>Ve fiskálním roce 2024 NVIDIA vykázala tržby <strong>$60.9 miliard</strong> – meziročně nárůst o 122 %. Čistý zisk dosáhl <strong>$29.8 miliard</strong>. Segment datových center tvoří přes <strong>83 % celkových příjmů</strong>.</p>
+      <h3>Marže a konkurence</h3>
+      <p>Hrubá marže NVIDIA se pohybuje kolem <strong>76 %</strong>. NVIDIA má dominantní postavení díky software ekosystému CUDA, který konkurence nedokáže snadno nahradit.</p>
+      <h2>Rizika</h2><div class="divider"></div>
+      <h3>Ocenění</h3>
+      <p>P/E ratio 35× je vysoké, ale při tempu růstu zisků (<strong>EPS meziročně +765 %</strong>) není nutně alarmující. Forward P/E kolem 28×.</p>
+      <h3>Geopolitika</h3>
+      <p>USA zavedla omezení na export čipů do Číny. Čína historicky tvořila přibližně <strong>20 % příjmů</strong> NVIDIA.</p>
+    `,
+    pros: ['Dominantní pozice v AI infrastruktuře','Rekordní tržby a ziskovost','Silný ekosystém CUDA','Rostoucí poptávka po AI výpočtech'],
+    cons: ['Vysoké ocenění po masivním růstu','Geopolitická rizika – Čína','Závislost na malém počtu zákazníků','Budoucí konkurence AMD'],
+    verdict: 'NVIDIA je kvalitní firma s výjimečnými základy, ale za prémiovou cenu. Vhodná jako část diverzifikovaného portfolia.',
+    rating: '★★★★☆ 4/5 – Sledovat a přikupovat při korekci',
+    more: ['microsoft','broadcom','amd']
+  },
+  microsoft: {
+    tags: ['Analýza','Akcie','Technologie'],
+    title: 'Microsoft 2025: Azure a AI jako motor růstu',
+    subtitle: 'Microsoft investuje desítky miliard do umělé inteligence. Cloud roste, Copilot expanduje. Je cena akcií ospravedlnitelná?',
+    date: '20. února 2026', time: '6 min čtení', ticker: 'MSFT',
+    price: '$397.23', change: '+0.87%', pe: '36.4×', cap: '$3.09T',
+    highlight: '„Microsoft vsadil na AI dřív než většina. Teď sklízí plody – ale otázka je, zda jsou v ceně akcií již zahrnuté."',
+    body: `
+      <h2>Proč je Microsoft jiný</h2><div class="divider"></div>
+      <p>Microsoft úspěšně zvládl velkou transformaci – z prodejce krabicového softwaru na cloudového a AI giganta. Klíčem byl <strong>Azure</strong>, který soutěží přímo s AWS a Google Cloud.</p>
+      <p>Microsoft jako první velká firma vsadil na OpenAI s investicí přes <strong>13 miliard dolarů</strong>. Výsledkem je Copilot integrovaný do Word, Excel, Teams a dalších produktů.</p>
+      <h2>Finanční výsledky</h2><div class="divider"></div>
+      <h3>Cloud a příjmy</h3>
+      <p>Ve fiskálním roce 2024 Microsoft vykázal tržby <strong>$245 miliard</strong>, nárůst o 16 %. Azure rostl tempem přes <strong>29 % ročně</strong>.</p>
+      <h3>Ziskovost</h3>
+      <p>Čistý zisk dosáhl <strong>$88 miliard</strong> s marží přes 35 %. Dividenda roste každý rok.</p>
+      <h2>Rizika</h2><div class="divider"></div>
+      <h3>Regulace</h3>
+      <p>Microsoft je pod drobnohledem regulátorů v EU i USA. Antimonopolní tlak roste.</p>
+      <h3>AI monetizace</h3>
+      <p>Velká část prémie v ceně je postavena na očekávání masivní monetizace Copilotu. Pokud adopce zpomalí, cena může korigovat.</p>
+    `,
+    pros: ['Azure roste 29 % ročně','Diverzifikované příjmy','Silná AI pozice přes OpenAI','Stabilní dividenda a buybacky'],
+    cons: ['Vysoké P/E 36×','Regulatorní rizika','AI monetizace nevyšla naplno','Konkurence AWS a Google Cloud'],
+    verdict: 'Microsoft je prémiová firma za prémiovou cenu. Pro dlouhodobé investory jedna z nejbezpečnějších sázek v tech sektoru.',
+    rating: '★★★★☆ 4/5 – Držet, přikupovat při korekci',
+    more: ['nvidia','broadcom','palantir']
+  },
+  broadcom: {
+    tags: ['Analýza','Technologie'],
+    title: 'Broadcom 2025: Tichý gigant AI čipů',
+    subtitle: 'Broadcom není tak slavný jako NVIDIA, ale jeho role v AI infrastruktuře je naprosto klíčová. Kdo je tento tichý gigant?',
+    date: '19. února 2026', time: '5 min čtení', ticker: 'AVGO',
+    price: '$335.79', change: '+1.45%', pe: '34.2×', cap: '$862B',
+    highlight: '„Broadcom je firma, o které většina lidí neslyšela – přesto pohání internet, AI datacentra i smartphony po celém světě."',
+    body: `
+      <h2>Co vlastně Broadcom dělá</h2><div class="divider"></div>
+      <p>Broadcom je diverzifikovaný technologický gigant, který vyrábí polovodičové komponenty pro sítě, storage, broadband a stále více pro AI. Jeho čipy najdete v serverech Googlu, Apple iPhone i prakticky každém síťovém zařízení ve světě.</p>
+      <p>Klíčovým produktem pro AI jsou <strong>vlastní AI akcelerátory (XPUs)</strong>, které Google a Meta používají jako alternativu k NVIDIA GPU pro specifické AI úlohy. Broadcom také dominuje trhu <strong>Ethernet síťových čipů</strong> pro AI datacentra.</p>
+      <h2>Finanční výsledky</h2><div class="divider"></div>
+      <h3>Příjmy</h3>
+      <p>Ve fiskálním roce 2024 Broadcom vykázal tržby <strong>$51.6 miliard</strong> – nárůst o 44 % díky akvizici VMware. AI segment rostl o více než <strong>220 % ročně</strong>.</p>
+      <h3>VMware integrace</h3>
+      <p>Akvizice VMware za <strong>$69 miliard</strong> v roce 2023 přinesla masivní software příjmy. Broadcom transformuje VMware na předplatný model s výrazně vyššími maržemi.</p>
+      <h2>Rizika</h2><div class="divider"></div>
+      <h3>Zákaznická koncentrace</h3>
+      <p>Broadcom je silně závislý na Applu (přibližně <strong>20 % příjmů</strong>) a hyperscalerech. Ztráta klíčového zákazníka by výrazně zasáhla výsledky.</p>
+    `,
+    pros: ['AI segment roste 220 % ročně','Dominantní síťové čipy','VMware přináší software marže','Silná dividenda +14 % ročně'],
+    cons: ['Zákaznická koncentrace (Apple)','Vysoký dluh po VMware akvizici','Méně slavný = méně retail zájem','Regulatorní rizika VMware'],
+    verdict: 'Broadcom je skrytý klenot pro investory hledající AI expozici mimo NVIDIA. Silné fundamenty, atraktivní dividenda.',
+    rating: '★★★★★ 5/5 – Koupit při jakékoliv korekci',
+    more: ['nvidia','microsoft','amd']
+  },
+  netflix: {
+    tags: ['Analýza','Média'],
+    title: 'Netflix 2025: Od DVD půjčovny k reklamnímu gigantu',
+    subtitle: 'Netflix přidal reklamy a živé sporty. Předplatitelé rostou. Je cena akcií po masivním růstu stále atraktivní?',
+    date: '18. února 2026', time: '6 min čtení', ticker: 'NFLX',
+    price: '$78.67', change: '+0.92%', pe: '42.1×', cap: '$298B',
+    highlight: '„Netflix byl jednou odsouzen k zániku kvůli konkurenci. Dnes patří mezi nejziskovější mediální firmy světa."',
+    body: `
+      <h2>Jak Netflix znovu vynalezl sám sebe</h2><div class="divider"></div>
+      <p>V roce 2022 Netflix ztratil miliony předplatitelů a akcie spadly o 75 %. Analytici psali nekrology. O dva roky později je Netflix opět na vrcholu – s <strong>více než 300 miliony předplatitelů</strong> a rekordními příjmy.</p>
+      <p>Klíčem byl odvážný krok: <strong>reklamní tier</strong> za nižší cenu a tvrdý boj proti sdílení hesel. Výsledek? Masivní příliv nových předplatitelů a nový zdroj příjmů z reklam, který teprve začíná.</p>
+      <h2>Finanční výsledky</h2><div class="divider"></div>
+      <h3>Příjmy a růst</h3>
+      <p>V roce 2024 Netflix vykázal tržby <strong>$39 miliard</strong>, nárůst o 15 %. Provozní marže vzrostla na <strong>26 %</strong> – historické maximum. Free cash flow dosáhl $6.9 miliard.</p>
+      <h3>Reklamy jako budoucnost</h3>
+      <p>Reklamní tier má již přes <strong>70 milionů aktivních uživatelů</strong> měsíčně. Netflix buduje vlastní reklamní platformu, která by mohla přinést miliardové příjmy nad rámec předplatného.</p>
+      <h2>Rizika</h2><div class="divider"></div>
+      <h3>Saturace trhu</h3>
+      <p>S 300 miliony předplatitelů je obtížné pokračovat v rychlém růstu. Netflix se přesouvá k vyšším cenám a live eventem jako NFL zápasy.</p>
+    `,
+    pros: ['300M+ předplatitelů celosvětově','Reklamní příjmy teprve začínají','Živé sporty jako nový driver','Rekordní provozní marže 26 %'],
+    cons: ['Saturace na vyspělých trzích','Vysoké P/E 42×','Rostoucí náklady na obsah','Konkurence Disney+, HBO Max'],
+    verdict: 'Netflix úspěšně prošel transformací. Reklamní byznys a live sport mohou výrazně zvýšit příjmy v příštích letech.',
+    rating: '★★★★☆ 4/5 – Atraktivní pro dlouhodobé investory',
+    more: ['microsoft','palantir','amd']
+  },
+  amd: {
+    tags: ['Analýza','Technologie'],
+    title: 'AMD 2025: Může porazit NVIDIA v AI závodě?',
+    subtitle: 'AMD agresivně útočí na trh AI čipů s řadou MI300. Má šanci získat výrazný podíl a ohrozit dominanci NVIDIA?',
+    date: '17. února 2026', time: '7 min čtení', ticker: 'AMD',
+    price: '$200.15', change: '+2.34%', pe: '28.7×', cap: '$272B',
+    highlight: '„AMD je underdog příběh technologického světa. Firma, která se vrátila z okraje propasti a dnes ohrožuje NVIDIA na jejím vlastním území."',
+    body: `
+      <h2>AMD comeback příběh</h2><div class="divider"></div>
+      <p>Před deseti lety byl AMD na pokraji bankrotu. Dnes je AMD druhým největším hráčem na trhu procesorů a GPU, s tržní hodnotou přes <strong>$270 miliard</strong>. Za tímto obratem stojí CEO Lisa Su – jedna z nejvíce respektovaných lídrů v tech průmyslu.</p>
+      <p>AMD úspěšně dobyla trh serverových procesorů (<strong>EPYC</strong>) a nyní agresivně útočí na AI GPU trh s řadou <strong>Instinct MI300X</strong>, která nabízí konkurenceschopný výkon proti NVIDIA H100.</p>
+      <h2>Finanční výsledky</h2><div class="divider"></div>
+      <h3>Příjmy a AI segment</h3>
+      <p>V roce 2024 AMD vykázalo tržby <strong>$25.8 miliard</strong>, nárůst o 14 %. AI GPU segment (MI300) překonal <strong>$5 miliard</strong> ročních příjmů – výrazně nad původními odhady.</p>
+      <h3>Datová centra</h3>
+      <p>Segment datových center roste nejrychleji – <strong>+122 % meziročně</strong>. Microsoft, Meta a Oracle nasazují MI300X jako doplněk nebo alternativu k NVIDIA.</p>
+      <h2>Rizika</h2><div class="divider"></div>
+      <h3>Software ekosystém</h3>
+      <p>NVIDIA CUDA má desetiletý náskok. AMD ROCm software ekosystém se zlepšuje, ale stále zaostává. Mnoho AI vývojářů odmítá přejít kvůli kompatibilitě.</p>
+    `,
+    pros: ['MI300X konkurenceschopný NVIDIA','Datová centra rostou 122 %','Nižší valuace než NVIDIA','Lisa Su = výjimečné vedení'],
+    cons: ['CUDA ekosystém NVIDIA nedostižný','Tržní podíl AI GPU stále malý','Slabší GPU gaming segment','Integrace Xilinx stále probíhá'],
+    verdict: 'AMD je solidní alternativa k NVIDIA s nižší valuací. Plný potenciál AI segmentu se teprve ukáže.',
+    rating: '★★★★☆ 4/5 – Koupit pro diverzifikaci AI expozice',
+    more: ['nvidia','microsoft','broadcom']
+  },
+  palantir: {
+    tags: ['Analýza','AI & Data'],
+    title: 'Palantir 2025: Kontroverzní AI firma s vládními kontrakty',
+    subtitle: 'Palantir milují jedni a nenávidí druzí. Vládní kontrakty, AI platforma a extrémní valuace. Co říkají čísla?',
+    date: '16. února 2026', time: '7 min čtení', ticker: 'PLTR',
+    price: '$135.24', change: '+4.12%', pe: '198×', cap: '$168B',
+    highlight: '„Palantir je pravděpodobně nejvíce polarizující akcie na Wall Street. Buď ji milujete, nebo nenávidíte – ale ignorovat ji nelze."',
+    body: `
+      <h2>Co Palantir vlastně dělá</h2><div class="divider"></div>
+      <p>Palantir vyvíjí analytické softwarové platformy pro vládní agentury a korporace. Jejich produkty <strong>Gotham</strong> (vládní) a <strong>Foundry</strong> (komerční) umožňují organizacím zpracovávat obrovská množství dat a dělat rozhodnutí v reálném čase.</p>
+      <p>Nejnovějším produktem je <strong>AIP (Artificial Intelligence Platform)</strong> – AI vrstva nad existujícími systémy, která zažívá explozivní adopci. Palantir pořádá tzv. "boot campy" kde zákazníci vidí AIP v akci a okamžitě podepisují smlouvy.</p>
+      <h2>Finanční výsledky</h2><div class="divider"></div>
+      <h3>Příjmy a ziskovost</h3>
+      <p>V roce 2024 Palantir vykázal tržby <strong>$2.87 miliard</strong>, nárůst o 29 %. Poprvé v historii dosáhl <strong>plné GAAP ziskovosti</strong> po celý rok. US komerční segment rostl o 70 %.</p>
+      <h3>AIP jako game changer</h3>
+      <p>AIP přináší Palantiru přístup k enterprise trhům mimo vládní sektor. Zákazníci jako <strong>BP, Airbus a Ferrari</strong> nasazují AIP pro operativní rozhodování.</p>
+      <h2>Rizika</h2><div class="divider"></div>
+      <h3>Extrémní valuace</h3>
+      <p>P/E ratio 198× je jedním z nejvyšších v celém S&P 500. I při optimistických předpokladech musí Palantir růst desetiletí aby tuto valuaci ospravedlnil.</p>
+    `,
+    pros: ['AIP explozivní adopce','První plná GAAP ziskovost','US komerční segment +70 %','Unikátní vládní kontrakty'],
+    cons: ['P/E 198× extrémně vysoké','Malá firma vs. obří valuace','Závislost na vládních kontraktech','Zakladatelé kontrolují hlasování'],
+    verdict: 'Palantir je výjimečná firma s reálným produktem. Ale při valuaci 198× P/E je potřeba hodně víry v budoucí růst.',
+    rating: '★★★☆☆ 3/5 – Spekulativní pozice pro odvážné',
+    more: ['nvidia','microsoft','netflix']
+  }
+};
+
+const articleTitles = {
+  nvidia: 'NVIDIA 2025', microsoft: 'Microsoft 2025', broadcom: 'Broadcom 2025',
+  netflix: 'Netflix 2025', amd: 'AMD 2025', palantir: 'Palantir 2025'
+};
+
+function showHome(skipHistory) { if (!skipHistory) history.pushState({page:'home'}, '', '#');
+  document.getElementById('page-home').classList.add('active');
+  document.getElementById('page-article').classList.remove('active');
+  document.getElementById('nav-back').style.display = 'none';
+  window.scrollTo(0,0);
+}
+
+function showArticle(id, skipHistory) { if (!skipHistory) history.pushState({page:'article', id:id}, '', '#'+id);
+  const a = articles[id];
+  if (!a) return;
+  
+  const tagsHtml = a.tags.map((t,i) => `<span class="art-tag${i===2?' green':''}">${t}</span>`).join('');
+  const prosHtml = a.pros.map(p => `<li>${p}</li>`).join('');
+  const consHtml = a.cons.map(c => `<li>${c}</li>`).join('');
+  const moreHtml = a.more.map(m => `
+    <div class="mc" onclick="showArticle('${m}')">
+      <div class="mc-tag">${articles[m].tags[0]}</div>
+      <div class="mc-title">${articles[m].title}</div>
+      <div class="mc-meta">${articles[m].date} · ${articles[m].time}</div>
+    </div>`).join('');
+
+  document.getElementById('article-content').innerHTML = `
+    <div class="art-hero">
+      <div class="art-tags">${tagsHtml}</div>
+      <h1 class="art-h1">${a.title}</h1>
+      <p class="art-sub">${a.subtitle}</p>
+      <div class="art-meta">
+        <span><strong>${a.date}</strong></span>
+        <span>${a.time}</span>
+        <span>Ticker: <strong style="color:var(--accent)">${a.ticker}</strong></span>
+      </div>
+      <div class="stock-box">
+        <div><div class="sl">Aktuální cena</div><div class="sv g">${a.price}</div></div>
+        <div><div class="sl">Změna dnes</div><div class="sv up">${a.change}</div></div>
+        <div><div class="sl">P/E Ratio</div><div class="sv">${a.pe}</div></div>
+        <div><div class="sl">Tržní hodnota</div><div class="sv g">${a.cap}</div></div>
+      </div>
+    </div>
+    <div class="art-body">
+      <div class="hl">${a.highlight}</div>
+      ${a.body}
+      <div class="ad"><div><div class="al">Reklama</div><div class="at">Investujte přes partnera – bez poplatků za obchod</div></div><button class="ac-btn">Zjistit více →</button></div>
+      <h2>Pro a proti</h2><div class="divider"></div>
+      <div class="procon">
+        <div class="pro"><div class="pro-t">✦ Argumenty pro</div><ul>${prosHtml}</ul></div>
+        <div class="con"><div class="con-t">✦ Argumenty proti</div><ul>${consHtml}</ul></div>
+      </div>
+      <div class="verdict">
+        <div class="vl">Náš verdikt</div>
+        <div class="vt">${a.verdict}</div>
+        <div class="vr">Hodnocení: <span class="stars">${a.rating}</span></div>
+      </div>
+      <div class="disc"><strong>Upozornění:</strong> Tento článek slouží pouze k informačním účelům a nepředstavuje investiční poradenství. BriefStock CZ nezodpovídá za finanční rozhodnutí učiněná na základě tohoto obsahu.</div>
+    </div>
+    <div class="more-articles">
+      <div class="more-t">Další analýzy</div>
+      <div class="more-grid">${moreHtml}</div>
+    </div>`;
+
+  document.getElementById('page-home').classList.remove('active');
+  document.getElementById('page-article').classList.add('active');
+  document.getElementById('nav-back').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+// TOP 10 by market cap: NVDA, AAPL, GOOGL, MSFT, AMZN, META, AVGO, TSLA, BRK.B, WMT
+const TICKERS = ['NVDA','AAPL','GOOGL','MSFT','AMZN','META','AVGO','TSLA','BRK.B','WMT'];
+const FINNHUB_KEY = 'd0ekm4pr01qgs60dj6cgd0ekm4pr01qgs60dj6d0';
+
+async function fetchTicker() {
+  try {
+    const results = await Promise.all(TICKERS.map(sym =>
+      fetch(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${FINNHUB_KEY}`)
+        .then(r => r.json())
+        .then(d => ({ sym, price: d.c, pct: ((d.c - d.pc) / d.pc * 100) }))
+    ));
+
+    const valid = results.filter(r => r.price > 0);
+    if (!valid.length) return;
+
+    const doubled = [...valid, ...valid];
+    let html = '';
+    doubled.forEach(r => {
+      const dir = r.pct >= 0 ? 'up' : 'down';
+      const sign = r.pct >= 0 ? '+' : '';
+      html += `<span class="ti"><span class="tn">${r.sym}</span>&nbsp;${r.price.toFixed(2)}&nbsp;<span class="${dir}">${sign}${r.pct.toFixed(2)}%</span></span>`;
+    });
+    document.getElementById('ticker-inner').innerHTML = html;
+  } catch(e) {
+    console.log('Ticker error', e);
+  }
+}
+
+fetchTicker();
+setInterval(fetchTicker, 60000);
+
+
+window.addEventListener('load', function() {
+  const hash = window.location.hash.replace('#','');
+  if (hash && articles[hash]) showArticle(hash, true);
+});
+
+// Middle click / Ctrl+click opens new tab
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('[data-id]');
+  if (card && (e.ctrlKey || e.metaKey || e.button === 1)) {
+    e.preventDefault();
+    window.open(window.location.pathname + '#' + card.dataset.id, '_blank');
+  }
+});
+document.addEventListener('auxclick', function(e) {
+  if (e.button === 1) {
+    const card = e.target.closest('[data-id]');
+    if (card) { e.preventDefault(); window.open(window.location.pathname + '#' + card.dataset.id, '_blank'); }
+  }
+});
+
+window.addEventListener('popstate', function(e) { if (e.state) { if (e.state.page === 'home') showHome(true); else if (e.state.page === 'article') showArticle(e.state.id, true); } else { showHome(true); } });
+</script>
+</body>
+</html>
